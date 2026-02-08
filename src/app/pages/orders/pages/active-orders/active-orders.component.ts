@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { MaterialModule } from '../../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { OrderService } from '../../services/order.service';
-import { Order } from '../../../../models/order.model';
+import { OrderModel } from '../../../../models/order.model';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -14,102 +14,50 @@ import { Observable } from 'rxjs';
   template: `
     <div class="page-container">
       <div class="page-header">
-        <div class="header-content">
-          <div class="header-text">
-            <h1 class="mat-display-1">Active Orders</h1>
-            <p class="mat-body-1">Your accepted orders in progress</p>
-          </div>
-          <div class="header-badge">
-            <mat-chip class="count-chip">
-              {{ (activeOrders$ | async)?.length || 0 }} Active
-            </mat-chip>
-          </div>
-        </div>
+        <h1>Active Orders</h1>
+        <span class="count">{{ (orders$ | async)?.length || 0 }} active</span>
       </div>
 
       <div class="orders-list">
-        <mat-card *ngFor="let order of activeOrders$ | async" class="order-card mat-elevation-z2">
-          <div class="status-bar"></div>
-
-          <mat-card-content>
-            <div class="order-summary">
-              <div class="order-left">
-                <div class="store-section">
-                  <div class="store-icon">
-                    <i-tabler name="building-store"></i-tabler>
-                  </div>
-                  <div class="store-details">
-                    <h3 class="store-name">{{ order.storeName }}</h3>
-                    <p class="order-id">Order #{{ order.id }}</p>
-                  </div>
-                </div>
-
-                <div class="customer-info">
-                  <div class="info-item">
-                    <div class="info-icon">
-                      <i-tabler name="user"></i-tabler>
-                    </div>
-                    <span>{{ order.customerName }}</span>
-                  </div>
-                  <div class="info-item">
-                    <div class="info-icon">
-                      <i-tabler name="map-pin"></i-tabler>
-                    </div>
-                    <span>{{ order.customerAddress }}</span>
-                  </div>
-                </div>
+        <div *ngFor="let order of orders$ | async" class="order-card">
+          <div class="card-body">
+            <div class="card-top">
+              <div class="store-info">
+                <span class="store-name">Store: {{ order.storeId }}</span>
+                <span class="order-id">#{{ order.id }}</span>
               </div>
-
-              <div class="order-stats">
-                <div class="stat-card">
-                  <i-tabler name="shopping-bag" class="stat-icon"></i-tabler>
-                  <div class="stat-info">
-                    <span class="stat-label">Items</span>
-                    <span class="stat-value">{{ order.itemCount }}</span>
-                  </div>
-                </div>
-                <div class="stat-card">
-                  <i-tabler name="currency-dollar" class="stat-icon"></i-tabler>
-                  <div class="stat-info">
-                    <span class="stat-label">Pay</span>
-                    <span class="stat-value">\${{ order.estimatedPay.toFixed(2) }}</span>
-                  </div>
-                </div>
-                <div class="stat-card status-card">
-                  <i-tabler name="circle-check" class="stat-icon"></i-tabler>
-                  <div class="stat-info">
-                    <span class="stat-label">Status</span>
-                    <mat-chip class="status-chip">{{ order.status }}</mat-chip>
-                  </div>
-                </div>
-              </div>
-
-              <div class="order-actions">
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="continueOrder(order.id)"
-                  class="continue-btn"
-                >
-                  <i-tabler name="arrow-right"></i-tabler>
-                  Continue Shopping
-                </button>
-              </div>
+              <mat-chip class="status-chip">{{ order.status }}</mat-chip>
             </div>
-          </mat-card-content>
-        </mat-card>
+
+            <div class="meta-row">
+              <span *ngIf="order.total != null" class="pay">\${{ order.total.toFixed(2) }}</span>
+              <span *ngIf="order.tip != null" class="tip">+\${{ order.tip.toFixed(2) }} tip</span>
+            </div>
+
+            <div class="customer-row">
+              <span class="customer-id">Customer: {{ order.customerId }}</span>
+            </div>
+
+            <div class="actions">
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="continueOrder(order.id)"
+                class="continue-btn"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div *ngIf="(activeOrders$ | async)?.length === 0" class="empty-state">
-        <div class="empty-content">
-          <i-tabler name="clipboard-check" class="empty-icon"></i-tabler>
-          <h2 class="mat-headline-5">No Active Orders</h2>
-          <p class="mat-body-1">Accept an order from the available orders list to get started</p>
-          <button mat-raised-button color="primary" (click)="goToAvailableOrders()" class="cta-button">
-            <i-tabler name="plus"></i-tabler>
-            View Available Orders
-          </button>
-        </div>
+      <div *ngIf="(orders$ | async)?.length === 0" class="empty-state">
+        <p class="empty-text">No active orders</p>
+        <p class="empty-sub">Accept an order to get started</p>
+        <button mat-flat-button color="primary" (click)="goToAvailableOrders()" class="cta-btn">
+          View Available Orders
+        </button>
       </div>
     </div>
   `,
@@ -117,386 +65,179 @@ import { Observable } from 'rxjs';
     `
       .page-container {
         padding: 24px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        max-width: 720px;
+        margin: 0 auto;
         min-height: 100vh;
       }
 
       .page-header {
-        background: white;
-        border-radius: 16px;
-        padding: 32px;
-        margin-bottom: 32px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      }
-
-      .header-content {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
+        margin-bottom: 24px;
       }
 
-      .header-text h1 {
-        margin: 0 0 8px 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 700;
-        font-size: 36px;
-      }
-
-      .header-text p {
+      .page-header h1 {
         margin: 0;
-        color: rgba(0, 0, 0, 0.6);
-        font-size: 16px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #111;
       }
 
-      .header-badge {
-        display: flex;
-        align-items: center;
-      }
-
-      .count-chip {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        height: 36px !important;
-        padding: 0 20px !important;
-        border-radius: 18px !important;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      .count {
+        font-size: 13px;
+        color: #888;
+        font-weight: 500;
       }
 
       .orders-list {
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        margin-bottom: 32px;
+        gap: 10px;
       }
 
       .order-card {
-        position: relative;
-        border-radius: 16px;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
         overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: white;
+        transition: background 0.15s;
       }
 
       .order-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+        background: #fafafa;
       }
 
-      .status-bar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #4caf50 0%, #2e7d32 100%);
+      .card-body {
+        padding: 14px 16px;
       }
 
-      mat-card-content {
-        padding: 24px !important;
-      }
-
-      .order-summary {
-        display: grid;
-        grid-template-columns: 2fr 1.5fr auto;
-        gap: 32px;
-        align-items: center;
-      }
-
-      .order-left {
+      .card-top {
         display: flex;
-        flex-direction: column;
-        gap: 20px;
-      }
-
-      .store-section {
-        display: flex;
-        gap: 16px;
+        justify-content: space-between;
         align-items: center;
+        margin-bottom: 6px;
       }
 
-      .store-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      .store-info {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      }
-
-      .store-icon i-tabler {
-        width: 28px;
-        height: 28px;
-      }
-
-      .store-details {
-        flex: 1;
+        align-items: baseline;
+        gap: 8px;
+        min-width: 0;
       }
 
       .store-name {
-        margin: 0 0 6px 0;
-        font-size: 22px;
-        font-weight: 700;
-        color: rgba(0, 0, 0, 0.87);
+        font-size: 15px;
+        font-weight: 600;
+        color: #111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .order-id {
-        margin: 0;
-        font-size: 13px;
-        color: rgba(0, 0, 0, 0.5);
-        font-weight: 500;
-      }
-
-      .customer-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding-left: 72px;
-      }
-
-      .info-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        color: rgba(0, 0, 0, 0.7);
-      }
-
-      .info-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667eea;
+        font-size: 12px;
+        color: #999;
         flex-shrink: 0;
-      }
-
-      .info-icon i-tabler {
-        width: 18px;
-        height: 18px;
-      }
-
-      .order-stats {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .stat-card {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 14px 18px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 12px;
-        transition: all 0.2s;
-      }
-
-      .stat-card:hover {
-        transform: translateX(4px);
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-      }
-
-      .stat-card .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        flex-shrink: 0;
-      }
-
-      .stat-card .stat-icon {
-        width: 20px;
-        height: 20px;
-      }
-
-      .stat-info {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
-
-      .stat-label {
-        font-size: 11px;
-        color: rgba(0, 0, 0, 0.6);
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 2px;
-      }
-
-      .stat-value {
-        font-size: 18px;
-        font-weight: 700;
-        color: rgba(0, 0, 0, 0.87);
       }
 
       .status-chip {
-        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;
-        color: white !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
         font-weight: 600 !important;
-        height: 28px !important;
-        padding: 0 12px !important;
-        border-radius: 14px !important;
+        height: 24px !important;
+        padding: 0 10px !important;
+        background: #e8f5e9 !important;
+        color: #2e7d32 !important;
       }
 
-      .order-actions {
+      .meta-row {
         display: flex;
-        align-items: center;
+        align-items: baseline;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .pay {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111;
+      }
+
+      .tip {
+        font-size: 12px;
+        font-weight: 500;
+        color: #43a047;
+      }
+
+      .customer-row {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .customer-id {
+        font-weight: 500;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
       }
 
       .continue-btn {
-        min-width: 180px;
-        height: 56px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
-        transition: all 0.3s;
-      }
-
-      .continue-btn:hover {
-        box-shadow: 0 6px 24px rgba(102, 126, 234, 0.5) !important;
-        transform: translateY(-2px);
-      }
-
-      .continue-btn i-tabler {
-        width: 22px;
-        height: 22px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px !important;
       }
 
       .empty-state {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 400px;
-      }
-
-      .empty-content {
         text-align: center;
-        padding: 64px 48px;
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        max-width: 480px;
+        padding: 64px 24px;
       }
 
-      .empty-icon {
-        width: 96px;
-        height: 96px;
-        color: #667eea;
-        opacity: 0.3;
-        margin-bottom: 24px;
+      .empty-text {
+        margin: 0 0 4px 0;
+        font-size: 15px;
+        font-weight: 500;
+        color: #555;
       }
 
-      .empty-content h2 {
-        margin: 0 0 16px 0;
-        color: rgba(0, 0, 0, 0.87);
+      .empty-sub {
+        margin: 0 0 20px 0;
+        font-size: 13px;
+        color: #999;
       }
 
-      .empty-content p {
-        margin: 0 0 32px 0;
-        color: rgba(0, 0, 0, 0.6);
-        font-size: 16px;
+      .cta-btn {
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px !important;
       }
 
-      .cta-button {
-        height: 48px;
-        padding: 0 32px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 24px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .cta-button:hover {
-        box-shadow: 0 6px 24px rgba(102, 126, 234, 0.5) !important;
-        transform: translateY(-2px);
-      }
-
-      .cta-button i-tabler {
-        width: 20px;
-        height: 20px;
-      }
-
-      @media (max-width: 1024px) {
-        .order-summary {
-          grid-template-columns: 1fr;
-          gap: 24px;
-        }
-
-        .customer-info {
-          padding-left: 0;
-        }
-
-        .order-stats {
-          flex-direction: row;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .page-container {
-          padding: 16px;
-        }
-
-        .page-header {
-          padding: 20px;
-        }
-
-        .header-text h1 {
-          font-size: 28px;
-        }
-
-        .order-stats {
-          flex-direction: column;
-        }
-
-        .continue-btn {
-          width: 100%;
-        }
+      @media (max-width: 600px) {
+        .page-container { padding: 16px; }
+        .customer-row { flex-direction: column; gap: 2px; }
       }
     `,
   ],
 })
 export class ActiveOrdersComponent implements OnInit {
-  activeOrders$: Observable<Order[]>;
+  orders$: Observable<OrderModel[]>;
 
   constructor(
     private orderService: OrderService,
     private router: Router
   ) {
-    this.activeOrders$ = this.orderService.getActiveOrders();
+    this.orders$ = this.orderService.getOrders();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.orderService.loadOrders().subscribe();
+  }
 
-  continueOrder(orderId: string): void {
+  continueOrder(orderId: number): void {
     this.router.navigate(['/orders/detail', orderId]);
   }
 

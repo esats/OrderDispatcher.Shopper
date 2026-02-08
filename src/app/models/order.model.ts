@@ -71,3 +71,19 @@ export interface Batch {
   totalDistance: number;
   estimatedTime: number;
 }
+
+export interface OrderModel {
+  id: number;
+  customerId: string;
+  storeId: string;
+  shopperId: string | null;
+  basketMasterId: number;
+  assignedAtUtc: string | null;
+  status: number;
+  subtotal: number | null;
+  deliveryFee: number | null;
+  serviceFee: number | null;
+  tip: number | null;
+  total: number | null;
+  notes: string | null;
+}
