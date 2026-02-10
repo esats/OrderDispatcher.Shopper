@@ -72,9 +72,32 @@ export interface Batch {
   estimatedTime: number;
 }
 
+export interface BasketDetailResponse {
+  userId: string;
+  storeId: string;
+  basketMasterId: number;
+  deliveryAddressId: number;
+  items: BasketItem[];
+}
+
+export interface BasketItem {
+  id?: number;
+  name?: string;
+  productId?: number;
+  productName?: string;
+  description?: string;
+  productPrice: number;
+  imageUrl?: string | null;
+  quantity: number;
+  unitType?: number;
+  weight?: number;
+}
+
 export interface OrderModel {
   id: number;
   customerId: string;
+  storeName: string;
+  storeImageUrl: string;
   storeId: string;
   shopperId: string | null;
   basketMasterId: number;
@@ -87,3 +110,4 @@ export interface OrderModel {
   total: number | null;
   notes: string | null;
 }
+

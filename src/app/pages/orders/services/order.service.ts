@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { OrderModel } from '../../../models/order.model';
+import { BasketDetailResponse, OrderModel } from '../../../models/order.model';
 import { ApiService } from '../../../services/api.service';
 
 @Injectable({
@@ -14,10 +15,8 @@ export class OrderService {
 
   loadOrders(): Observable<OrderModel[]> {
     return this.apiService
-      .get<OrderModel[]>('/api/order-management/order/getAll')
-      .pipe(
-        tap((orders) => this.ordersSubject.next(orders))
-      );
+      .get<OrderModel[]>('/aggregate/order-management/orders')
+      .pipe(tap((orders) => this.ordersSubject.next(orders)));
   }
 
   getOrders(): Observable<OrderModel[]> {
@@ -26,5 +25,14 @@ export class OrderService {
 
   getOrderById(orderId: number): OrderModel | undefined {
     return this.ordersSubject.getValue().find((o) => o.id === orderId);
+  }
+
+  loadBasketDetail(userId: string, storeId: string): Observable<BasketDetailResponse> {
+    let params = new HttpParams().set('userId', userId);
+    params = params.set('storeId', storeId);
+    return this.apiService.get<BasketDetailResponse>(
+      '/aggregate/order-management/basketDetail',
+      { params }
+    );
   }
 }

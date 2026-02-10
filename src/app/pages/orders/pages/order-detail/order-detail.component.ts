@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule } from '../../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { OrderService } from '../../services/order.service';
-import { OrderModel } from '../../../../models/order.model';
+import { BasketItem, OrderModel } from '../../../../models/order.model';
 
 @Component({
   selector: 'app-order-detail',
@@ -16,9 +16,12 @@ import { OrderModel } from '../../../../models/order.model';
         <div class="page-header">
           <button mat-button class="back-btn" (click)="goBack()">Back</button>
           <div class="header-title">
-            <h1>Order #{{ order.id }}</h1>
-            <div class="header-badges">
-              <span class="status-label">Status: {{ order.status }}</span>
+            <div class="store-header">
+              <img *ngIf="order.storeImageUrl" [src]="order.storeImageUrl" [alt]="order.storeName" class="store-image" />
+              <div class="store-header-text">
+                <h1>{{ order.storeName }}</h1>
+                <span class="order-id">#{{ order.id }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -26,15 +29,14 @@ import { OrderModel } from '../../../../models/order.model';
         <div class="pay-row">
           <span *ngIf="order.total != null" class="pay-amount">\${{ order.total.toFixed(2) }}</span>
           <span *ngIf="order.tip != null" class="tip">+\${{ order.tip.toFixed(2) }} tip</span>
+          <span class="distance"><i-tabler name="map-pin" class="distance-icon"></i-tabler> 4 mile</span>
         </div>
 
         <div class="section">
           <h2 class="section-title">Order Info</h2>
           <div class="section-body">
-            <p class="info-line"><strong>Store:</strong> {{ order.storeId }}</p>
-            <p class="info-line"><strong>Customer:</strong> {{ order.customerId }}</p>
+            <p class="info-line"><strong>Store:</strong> {{ order.storeName }}</p>
             <p *ngIf="order.shopperId" class="info-line"><strong>Shopper:</strong> {{ order.shopperId }}</p>
-            <p class="info-line"><strong>Basket Master ID:</strong> {{ order.basketMasterId }}</p>
             <p *ngIf="order.assignedAtUtc" class="info-line"><strong>Assigned At:</strong> {{ order.assignedAtUtc }}</p>
           </div>
         </div>
@@ -53,6 +55,48 @@ import { OrderModel } from '../../../../models/order.model';
         <div *ngIf="order.notes" class="section">
           <h2 class="section-title">Notes</h2>
           <div class="note">{{ order.notes }}</div>
+        </div>
+
+        <button mat-raised-button class="products-btn" (click)="openProductsModal()">
+          <i-tabler name="package" class="products-icon"></i-tabler>
+          View Products
+        </button>
+
+        <button mat-raised-button class="accept-btn" (click)="acceptOrder()">
+          <i-tabler name="check" class="accept-icon"></i-tabler>
+          Accept
+        </button>
+
+        <div class="modal-overlay" *ngIf="showProductsModal" (click)="closeProductsModal()">
+          <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h2>Products</h2>
+              <button mat-icon-button (click)="closeProductsModal()">
+                <i-tabler name="x"></i-tabler>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div *ngIf="productsLoading" class="products-loading">
+                <mat-spinner diameter="24"></mat-spinner>
+              </div>
+              <div *ngIf="!productsLoading && basketItems.length === 0">
+                <p class="empty-text">No products available</p>
+              </div>
+              <div *ngIf="!productsLoading && basketItems.length > 0" class="product-list">
+                <div *ngFor="let item of basketItems" class="product-item">
+                  <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.productName || item.name" class="product-image" />
+                  <div *ngIf="!item.imageUrl" class="product-image-placeholder">
+                    <i-tabler name="package"></i-tabler>
+                  </div>
+                  <div class="product-info">
+                    <span class="product-name">{{ item.productName || item.name }}</span>
+                    <span class="product-qty">Qty: {{ item.quantity }}</span>
+                  </div>
+                  <span class="product-price">\${{ item.productPrice.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -95,11 +139,36 @@ import { OrderModel } from '../../../../models/order.model';
         gap: 8px;
       }
 
-      .header-title h1 {
+      .store-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .store-image {
+        width: 72px;
+        height: 72px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .store-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .store-header-text h1 {
         margin: 0;
         font-size: 20px;
         font-weight: 600;
         color: #111;
+      }
+
+      .order-id {
+        font-size: 13px;
+        color: #999;
       }
 
       .header-badges {
@@ -139,6 +208,20 @@ import { OrderModel } from '../../../../models/order.model';
         font-size: 13px;
         font-weight: 500;
         color: #43a047;
+      }
+
+      .distance {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #666;
+      }
+
+      .distance-icon {
+        width: 14px;
+        height: 14px;
       }
 
       .section {
@@ -215,6 +298,168 @@ import { OrderModel } from '../../../../models/order.model';
         color: #e53935;
       }
 
+      .products-btn {
+        width: 100%;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 12px;
+        background: #f59e0b !important;
+        color: #fff !important;
+        border-radius: 10px;
+      }
+
+      .products-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      .accept-btn {
+        width: 100%;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 12px;
+        background: #2e7d32 !important;
+        color: #fff !important;
+        border-radius: 10px;
+      }
+
+      .accept-icon {
+        width: 18px;
+        height: 18px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #111;
+      }
+
+      .modal-body {
+        padding: 24px 20px;
+      }
+
+      .modal-body .empty-text {
+        text-align: center;
+        font-size: 14px;
+        color: #999;
+        margin: 0;
+      }
+
+      .products-loading {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0;
+      }
+
+      .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .product-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .product-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .product-image {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .product-image-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ccc;
+        flex-shrink: 0;
+      }
+
+      .product-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .product-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .product-qty {
+        font-size: 12px;
+        color: #888;
+      }
+
+      .product-price {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111;
+        flex-shrink: 0;
+      }
+
       @media (max-width: 600px) {
         .page-container { padding: 16px; }
         .pay-row { flex-wrap: wrap; }
@@ -260,6 +505,37 @@ export class OrderDetailComponent implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  showProductsModal = false;
+  productsLoading = false;
+  basketItems: BasketItem[] = [];
+
+  openProductsModal(): void {
+    this.showProductsModal = true;
+    if (this.order && this.basketItems.length === 0) {
+      this.productsLoading = true;
+      this.orderService
+        .loadBasketDetail(this.order.customerId, this.order.storeId)
+        .subscribe({
+          next: (res) => {
+            debugger
+            this.basketItems = res.items;
+            this.productsLoading = false;
+          },
+          error: () => {
+            this.productsLoading = false;
+          },
+        });
+    }
+  }
+
+  closeProductsModal(): void {
+    this.showProductsModal = false;
+  }
+
+  acceptOrder(): void {
+    // TODO: implement accept order API call
   }
 
   goBack(): void {

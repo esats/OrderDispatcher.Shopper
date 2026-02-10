@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { STORAGE_KEYS } from '../constants/storage-keys';
 import { ApiService } from './api.service';
 
@@ -12,6 +12,13 @@ interface LoginResponse {
   userId: string;
   email: string;
   bearerToken: string;
+}
+
+interface ApiResponse<T> {
+  value: T;
+  message: string;
+  exception: any;
+  data: any;
 }
 
 @Injectable({
@@ -29,12 +36,13 @@ export class AuthService {
   constructor(private readonly apiService: ApiService) {}
 
   login(payload: LoginPayload): Observable<LoginResponse> {
-    return this.apiService.post<LoginResponse>(this.loginPath, payload).pipe(
-      tap((response) => {
+    return this.apiService.post<ApiResponse<LoginResponse>>(this.loginPath, payload).pipe(
+      map((response) => response.value),
+      tap((data) => {
         const expiresAt = Date.now() + this.tokenLifetimeMs;
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, response.bearerToken);
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.bearerToken);
         localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN_EXPIRES_AT, expiresAt.toString());
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER_ID, response.userId);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER_ID, data.userId);
         this.authenticatedSubject.next(true);
       })
     );

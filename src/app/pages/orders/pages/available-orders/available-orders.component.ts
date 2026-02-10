@@ -22,13 +22,14 @@ import { Observable } from 'rxjs';
           *ngFor="let order of orders$ | async"
           class="order-card"
         >
-          <div class="card-body">
+          <div class="card-left">
+            <img *ngIf="order.storeImageUrl" [src]="order.storeImageUrl" [alt]="order.storeName" class="store-image" />
+            <span class="store-name">{{ order.storeName }}</span>
+          </div>
+
+          <div class="card-right">
             <div class="card-top">
-              <div class="store-info">
-                <span class="store-name">Store: {{ order.storeId }}</span>
-                <span class="order-id">#{{ order.id }}</span>
-              </div>
-              <span class="status-label">Status: {{ order.status }}</span>
+              <span class="order-id">#{{ order.id }}</span>
             </div>
 
             <div class="meta-row">
@@ -37,13 +38,9 @@ import { Observable } from 'rxjs';
             </div>
 
             <div class="info-row">
-              <span *ngIf="order.subtotal != null" class="info-item">Subtotal: \${{ order.subtotal.toFixed(2) }}</span>
+              <span class="info-item distance-item"><i-tabler name="map-pin" class="distance-icon"></i-tabler> 4 mile</span>
               <span *ngIf="order.deliveryFee != null" class="info-item">Delivery: \${{ order.deliveryFee.toFixed(2) }}</span>
               <span *ngIf="order.serviceFee != null" class="info-item">Service: \${{ order.serviceFee.toFixed(2) }}</span>
-            </div>
-
-            <div class="customer-row">
-              <span class="customer-id">Customer: {{ order.customerId }}</span>
             </div>
 
             <div *ngIf="order.notes" class="note">
@@ -107,39 +104,52 @@ import { Observable } from 'rxjs';
         background: #fafafa;
       }
 
-      .card-body {
-        flex: 1;
+      .order-card {
+        display: flex;
+        align-items: stretch;
+      }
+
+      .card-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         padding: 14px 16px;
+        gap: 8px;
+        flex-shrink: 0;
+        width: 110px;
+      }
+
+      .store-image {
+        width: 130px;
+        height: 130px;
+        border-radius: 12px;
+        object-fit: cover;
+      }
+
+      .store-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #111;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      .card-right {
+        flex: 1;
+        padding: 14px 16px 14px 0;
         min-width: 0;
       }
 
       .card-top {
         display: flex;
-        justify-content: space-between;
-        align-items: baseline;
+        justify-content: flex-end;
         margin-bottom: 6px;
-      }
-
-      .store-info {
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
-        min-width: 0;
-      }
-
-      .store-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #111;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .order-id {
         font-size: 12px;
         color: #999;
-        flex-shrink: 0;
       }
 
       .status-label {
@@ -182,6 +192,18 @@ import { Observable } from 'rxjs';
       .info-item {
         font-size: 12px;
         color: #666;
+      }
+
+      .distance-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-weight: 500;
+      }
+
+      .distance-icon {
+        width: 14px;
+        height: 14px;
       }
 
       .customer-row {
