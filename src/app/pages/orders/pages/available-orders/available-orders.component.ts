@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MaterialModule } from '../../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { OrderService } from '../../services/order.service';
 import { OrderModel } from '../../../../models/order.model';
-import { Observable } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
+import { DispatchSocketService } from '../../../../services/dispatch-socket.service';
 
 @Component({
   selector: 'app-available-orders',
@@ -270,18 +271,36 @@ import { Observable } from 'rxjs';
     `,
   ],
 })
-export class AvailableOrdersComponent implements OnInit {
+export class AvailableOrdersComponent implements OnInit, OnDestroy {
   orders$: Observable<OrderModel[]>;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private dispatchSocket: DispatchSocketService
   ) {
     this.orders$ = this.orderService.getOrders();
   }
 
   ngOnInit(): void {
     this.orderService.loadOrders().subscribe();
+
+    debugger
+    this.dispatchSocket.connect();
+
+    this.dispatchSocket.orderNew$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.orderService.loadOrders().subscribe();
+    });
+
+    this.dispatchSocket.orderClosed$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.orderService.loadOrders().subscribe();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   viewOrderDetail(orderId: number): void {
