@@ -38,56 +38,7 @@ import { navItems } from './sidebar-data';
       </ng-container>
     </mat-nav-list>
   `,
-  styles: [`
-    .brand-section {
-      padding: 24px 16px;
-      text-align: center;
-      border-bottom: 1px solid rgba(0,0,0,0.12);
-    }
-
-    .brand-section h2 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 600;
-      color: #667eea;
-    }
-
-    .nav-caption {
-      padding: 16px 16px 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(0,0,0,0.54);
-      text-transform: uppercase;
-    }
-
-    .nav-item {
-      margin: 4px 8px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      height: 48px;
-    }
-
-    .nav-item:hover {
-      background-color: rgba(0,0,0,0.04);
-    }
-
-    .nav-item.active {
-      background-color: #667eea;
-      color: white;
-    }
-
-    .nav-icon {
-      width: 20px;
-      height: 20px;
-    }
-
-    .nav-text {
-      font-size: 14px;
-      font-weight: 500;
-    }
-  `]
+  styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
   navItems = navItems;

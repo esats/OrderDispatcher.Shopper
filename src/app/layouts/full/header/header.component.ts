@@ -41,22 +41,7 @@ import { Router } from '@angular/router';
       </mat-menu>
     </mat-toolbar>
   `,
-  styles: [`
-    .header {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .spacer {
-      flex: 1 1 auto;
-    }
-
-    i-tabler {
-      width: 20px;
-      height: 20px;
-    }
-  `]
+  styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
   toggleSidebar = new EventEmitter<void>();

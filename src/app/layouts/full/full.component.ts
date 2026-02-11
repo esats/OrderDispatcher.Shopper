@@ -34,30 +34,7 @@ import { HeaderComponent } from './header/header.component';
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
-  styles: [`
-    .main-container {
-      width: 100%;
-      height: 100vh;
-    }
-
-    .sidenav {
-      width: 260px;
-      border-right: 1px solid rgba(0, 0, 0, 0.12);
-    }
-
-    .content {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .page-content {
-      flex: 1;
-      padding: 24px;
-      overflow: auto;
-      background-color: #f5f5f5;
-    }
-  `]
+  styleUrl: './full.component.scss'
 })
 export class FullComponent {
   sidenavOpened = true;
