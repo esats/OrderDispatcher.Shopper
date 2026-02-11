@@ -23,6 +23,10 @@ export class OrderService {
     return this.orders$;
   }
 
+  getOrderSnapshot(): OrderModel[] {
+    return this.ordersSubject.getValue();
+  }
+
   getOrderById(orderId: number): OrderModel | undefined {
     return this.ordersSubject.getValue().find((o) => o.id === orderId);
   }

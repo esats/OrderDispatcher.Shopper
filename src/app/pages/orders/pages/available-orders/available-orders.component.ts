@@ -16,12 +16,17 @@ import { DispatchSocketService } from '../../../../services/dispatch-socket.serv
     <div class="page-container">
       <div class="page-header">
         <h1>Available Orders</h1>
+        <span class="searching-label">
+          <mat-spinner diameter="16"></mat-spinner>
+          Searching new order
+        </span>
       </div>
 
       <div class="orders-list">
         <div
           *ngFor="let order of orders$ | async"
           class="order-card"
+          [class.new-order]="isNewOrder(order.id)"
         >
           <div class="card-left">
             <img *ngIf="order.storeImageUrl" [src]="order.storeImageUrl" [alt]="order.storeName" class="store-image" />
@@ -86,6 +91,19 @@ import { DispatchSocketService } from '../../../../services/dispatch-socket.serv
         color: #111;
       }
 
+      .searching-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #43a047;
+      }
+
+      .searching-label mat-spinner ::ng-deep circle {
+        stroke: #43a047;
+      }
+
       .orders-list {
         display: flex;
         flex-direction: column;
@@ -103,6 +121,18 @@ import { DispatchSocketService } from '../../../../services/dispatch-socket.serv
 
       .order-card:hover {
         background: #fafafa;
+      }
+
+      .order-card.new-order {
+        border-color: #43a047;
+        border-left: 4px solid #43a047;
+        animation: newOrderPulse 0.6s ease-in-out 3;
+      }
+
+      @keyframes newOrderPulse {
+        0% { box-shadow: 0 0 0 0 rgba(67, 160, 71, 0.4); }
+        50% { box-shadow: 0 0 12px 4px rgba(67, 160, 71, 0.25); }
+        100% { box-shadow: 0 0 0 0 rgba(67, 160, 71, 0); }
       }
 
       .order-card {
@@ -273,6 +303,7 @@ import { DispatchSocketService } from '../../../../services/dispatch-socket.serv
 })
 export class AvailableOrdersComponent implements OnInit, OnDestroy {
   orders$: Observable<OrderModel[]>;
+  newOrderIds = new Set<number>();
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -286,11 +317,19 @@ export class AvailableOrdersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.orderService.loadOrders().subscribe();
 
-    debugger
     this.dispatchSocket.connect();
 
     this.dispatchSocket.orderNew$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.orderService.loadOrders().subscribe();
+      const existingIds = new Set(
+        this.orderService.getOrderSnapshot().map((o) => o.id)
+      );
+      this.orderService.loadOrders().subscribe((orders) => {
+        const incoming = orders.filter((o) => !existingIds.has(o.id));
+        incoming.forEach((o) => {
+          this.newOrderIds.add(o.id);
+          setTimeout(() => this.newOrderIds.delete(o.id), 5000);
+        });
+      });
     });
 
     this.dispatchSocket.orderClosed$.pipe(takeUntil(this.destroy$)).subscribe(() => {
@@ -301,6 +340,10 @@ export class AvailableOrdersComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  isNewOrder(orderId: number): boolean {
+    return this.newOrderIds.has(orderId);
   }
 
   viewOrderDetail(orderId: number): void {
