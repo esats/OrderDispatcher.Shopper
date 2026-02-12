@@ -93,6 +93,11 @@ export interface BasketItem {
   weight?: number;
 }
 
+export interface AssignToShopperSaveModel {
+  shopperId: string;
+  orderId: number;
+}
+
 export interface OrderModel {
   id: number;
   customerId: string;

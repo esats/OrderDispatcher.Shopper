@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule } from '../../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { OrderService } from '../../services/order.service';
+import { AuthService } from '../../../../services/auth.service';
 import { BasketItem, OrderModel } from '../../../../models/order.model';
 
 @Component({
@@ -121,7 +122,8 @@ export class OrderDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -181,7 +183,18 @@ export class OrderDetailComponent implements OnInit {
   }
 
   acceptOrder(): void {
-    // TODO: implement accept order API call
+    debugger
+    const shopperId = this.authService.getUserId();
+    if (!this.order || !shopperId) return;
+
+    this.orderService.assignToShopper({ shopperId, orderId: this.order.id }).subscribe({
+      next: () => {
+        this.router.navigate(['/orders/active']);
+      },
+      error: (err) => {
+        console.error('Failed to accept order', err);
+      },
+    });
   }
 
   goBack(): void {
