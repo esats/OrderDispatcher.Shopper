@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { navItems } from './sidebar-data';
+import { OrderService } from '../../../pages/orders/services/order.service';
+import { AuthService } from '../../../services/auth.service';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sidebar',
@@ -26,7 +30,7 @@ import { navItems } from './sidebar-data';
 
         <!-- Nav Item -->
         <a
-          *ngIf="item.route"
+          *ngIf="item.route && (item.route !== '/orders/active' || (hasActiveOrder$ | async))"
           mat-list-item
           [routerLink]="[item.route]"
           routerLinkActive="active"
@@ -40,6 +44,22 @@ import { navItems } from './sidebar-data';
   `,
   styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   navItems = navItems;
+  hasActiveOrder$: Observable<boolean> = of(false);
+
+  constructor(
+    private orderService: OrderService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.hasActiveOrder$ = this.orderService.getActiveOrder(userId).pipe(
+        map((order) => !!order),
+        catchError(() => of(false))
+      );
+    }
+  }
 }

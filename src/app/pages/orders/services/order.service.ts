@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AssignToShopperSaveModel, BasketDetailResponse, OrderModel } from '../../../models/order.model';
+import { AssignToShopperSaveModel, BasketDetailResponse, Order, OrderModel } from '../../../models/order.model';
 import { ApiService } from '../../../services/api.service';
 
 @Injectable({
@@ -43,6 +43,11 @@ export class OrderService {
       '/aggregate/order-management/basketDetail',
       { params }
     );
+  }
+
+  getActiveOrder(userId: string): Observable<Order> {
+    const params = new HttpParams().set('userId', userId);
+    return this.apiService.get<Order>('/order-management/order/getActiveOrder', { params });
   }
 
   assignToShopper(model: AssignToShopperSaveModel): Observable<void> {
