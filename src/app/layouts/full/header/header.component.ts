@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
       </button>
 
       <mat-menu #userMenu="matMenu">
-        <button mat-menu-item>
+        <button mat-menu-item (click)="goToProfile()">
           <i-tabler name="user"></i-tabler>
           <span>Profile</span>
         </button>
@@ -47,6 +47,10 @@ export class HeaderComponent {
   toggleSidebar = new EventEmitter<void>();
 
   constructor(private router: Router) {}
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
+  }
 
   logout() {
     localStorage.removeItem('shopper_auth_token');

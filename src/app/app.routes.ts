@@ -19,6 +19,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/orders/orders.routes').then((m) => m.OrdersRoutes),
       },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/profile/profile.component').then(
+            (m) => m.ProfileComponent
+          ),
+      },
     ],
   },
   {
