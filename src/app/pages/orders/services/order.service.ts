@@ -31,6 +31,11 @@ export class OrderService {
     return this.ordersSubject.getValue().find((o) => o.id === orderId);
   }
 
+  removeOrder(orderId: number): void {
+    const orders = this.ordersSubject.getValue().filter((o) => o.id !== orderId);
+    this.ordersSubject.next(orders);
+  }
+
   loadBasketDetail(userId: string, storeId: string): Observable<BasketDetailResponse> {
     let params = new HttpParams().set('userId', userId);
     params = params.set('storeId', storeId);

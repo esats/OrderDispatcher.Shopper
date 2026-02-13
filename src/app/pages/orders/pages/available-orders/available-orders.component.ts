@@ -99,8 +99,8 @@ export class AvailableOrdersComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.dispatchSocket.orderClosed$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.orderService.loadOrders().subscribe();
+    this.dispatchSocket.orderClosed$.pipe(takeUntil(this.destroy$)).subscribe((payload) => {
+      this.orderService.removeOrder(Number(payload.orderId));
     });
   }
 
