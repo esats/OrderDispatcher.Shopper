@@ -23,9 +23,4 @@ export const navItems: NavItem[] = [
     iconName: 'clock',
     route: '/orders/active',
   },
-  {
-    displayName: 'Order Details',
-    iconName: 'list-details',
-    route: '/orders/detail/ORD-001',
-  },
 ];

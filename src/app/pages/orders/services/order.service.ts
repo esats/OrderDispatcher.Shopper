@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { AssignToShopperSaveModel, BasketDetailResponse, Order, OrderModel } from '../../../models/order.model';
 import { ApiService } from '../../../services/api.service';
 
@@ -52,5 +52,11 @@ export class OrderService {
 
   assignToShopper(model: AssignToShopperSaveModel): Observable<void> {
     return this.apiService.post<void>('/order-management/order/assignToShopper', model);
+  }
+
+  finishOrder(orderId: number): Observable<OrderModel> {
+    return this.apiService
+      .post<{ value: OrderModel }>('/order-management/order/finishOrder', orderId)
+      .pipe(map((res) => res.value));
   }
 }

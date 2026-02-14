@@ -7,6 +7,8 @@ import { OrderService } from '../../services/order.service';
 import { Order } from '../../../../models/order.model';
 import { Observable, of } from 'rxjs';
 import { AuthService } from '../../../../services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmFinishDialogComponent } from './confirm-finish-dialog.component';
 
 @Component({
   selector: 'app-active-orders',
@@ -43,10 +45,10 @@ import { AuthService } from '../../../../services/auth.service';
                 <button
                   mat-flat-button
                   color="primary"
-                  (click)="continueOrder(order.id)"
+                  (click)="finishOrder(order.id)"
                   class="continue-btn"
                 >
-                  Continue Shopping
+                  Finish Order
                 </button>
               </div>
             </div>
@@ -73,7 +75,8 @@ export class ActiveOrdersComponent implements OnInit {
   constructor(
     private orderService: OrderService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -83,8 +86,23 @@ export class ActiveOrdersComponent implements OnInit {
     }
   }
 
-  continueOrder(orderId: string): void {
-    this.router.navigate(['/orders/detail', orderId]);
+  finishOrder(orderId: string): void {
+    const dialogRef = this.dialog.open(ConfirmFinishDialogComponent);
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.orderService.finishOrder(Number(orderId)).subscribe({
+          next: (result) => {
+            this.router.navigate(['/orders/earnings'], {
+              state: { order: result },
+            });
+          },
+          error: (err) => {
+            console.error('Failed to finish order', err);
+          },
+        });
+      }
+    });
   }
 
   goToAvailableOrders(): void {

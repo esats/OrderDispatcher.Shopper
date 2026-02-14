@@ -27,4 +27,11 @@ export const OrdersRoutes: Routes = [
         (m) => m.OrderDetailComponent
       ),
   },
+  {
+    path: 'earnings',
+    loadComponent: () =>
+      import('./pages/order-earnings/order-earnings.component').then(
+        (m) => m.OrderEarningsComponent
+      ),
+  },
 ];
