@@ -7,7 +7,7 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Dashboard',
     iconName: 'home',
-    route: '/dashboard',
+    route: '/earnings',
   },
   {
     navCap: 'Orders',
@@ -22,5 +22,14 @@ export const navItems: NavItem[] = [
     displayName: 'Active Orders',
     iconName: 'clock',
     route: '/orders/active',
+  },
+  {
+    navCap: 'Finance',
+    divider: true,
+  },
+  {
+    displayName: 'My Earnings',
+    iconName: 'wallet',
+    route: '/earnings',
   },
 ];

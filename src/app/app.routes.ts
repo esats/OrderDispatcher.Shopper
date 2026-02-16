@@ -20,6 +20,13 @@ export const routes: Routes = [
           import('./pages/orders/orders.routes').then((m) => m.OrdersRoutes),
       },
       {
+        path: 'earnings',
+        loadComponent: () =>
+          import('./pages/earnings/earnings.component').then(
+            (m) => m.EarningsComponent
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./pages/profile/profile.component').then(

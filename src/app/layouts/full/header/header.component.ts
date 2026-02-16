@@ -29,10 +29,6 @@ import { Router } from '@angular/router';
           <i-tabler name="user"></i-tabler>
           <span>Profile</span>
         </button>
-        <button mat-menu-item>
-          <i-tabler name="settings"></i-tabler>
-          <span>Settings</span>
-        </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">
           <i-tabler name="logout"></i-tabler>
